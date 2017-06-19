@@ -1,6 +1,6 @@
 (function () {
 
-  var PENDING = undefined, FULFILLED = 1, REJECTED = 2;
+  var PENDING = 0, FULFILLED = 1, REJECTED = 2;
   var isArray = Array.isArray;
   var isFunction = function(inValue){
     return typeof inValue === 'function';
@@ -29,7 +29,7 @@
           val = fn.call(promise, val) || val;
       }
       promise[st ? '_value' : '_reason'] = val;
-      promise['_resolves'] = promise['_rejects'] = undefined;
+      promise['_resolves'] = promise['_rejects'] = [];
   };
 
 
@@ -39,19 +39,19 @@
     }
 
     var promise = this;
-    promise._value;
-    promise._reason;
+    promise._value = null;
+    promise._reason = null;
     promise._status = PENDING;
     promise._resolves = [];
     promise._rejects = [];
 
     var resolve = function(value){
       transition.apply(promise,[FULFILLED].concat([value]));
-    }
+    };
+    
     var reject = function(reason){
       transition.apply(promise,[REJECTED].concat([reason]));
-    }
-
+    };
     resolver(resolve,reject);
   };
 
@@ -76,6 +76,7 @@
         reason = isFunction(onRejected) && onRejected(reason) || reason;
         reject(reason);
       }
+      
       if(promise._status === PENDING){
         promise._resolves.push(callback);
         promise._rejects.push(errback);
@@ -84,6 +85,7 @@
       }else if(promise._status === REJECTED){
         errback(promise._reason);
       }
+      
     });
   };
 
